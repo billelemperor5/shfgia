@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMPEROR TECH AI</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* 🎨 نظام الثيمات المتعددة */
+        :root, html[data-theme="emperor"] {
+            --bg-dark-primary: #0A091E;      
+            --bg-dark-secondary: #16152D;    
+            --accent-primary: #00F5D4;      
+            --accent-secondary: #FFD700;    
+            --text-primary: #F0F2F5;        
+            --text-secondary: #a9a8c9;      
+            --border-color: rgba(169, 168, 201, 0.2); 
+            --user-bubble-bg: linear-gradient(135deg, #00B4D8, #0077B6);
+            --welcome-banner-bg: linear-gradient(135deg, #16152D, #2c2a5c);
+            --header-bg: #16152D;
+        }
+
+        html[data-theme="neon"] {
+            --bg-dark-primary: #0d1117;
+            --bg-dark-secondary: #161b22;
+            --accent-primary: #30A8F8;
+            --accent-secondary: #ff7b72;
+            --text-primary: #e6edf3;
+            --text-secondary: #7d8590;
+            --border-color: rgba(125, 133, 144, 0.2);
+            --user-bubble-bg: linear-gradient(135deg, #30A8F8, #1f6feb);
+            --welcome-banner-bg: linear-gradient(135deg, #161b22, #1f2937);
+            --header-bg: #161b22;
+        }
+        
+        html[data-theme="matrix"] {
+            --bg-dark-primary: #000000;
+            --bg-dark-secondary: #0D0D0D;
+            --accent-primary: #39FF14;
+            --accent-secondary: #DAA520;
+            --text-primary: #39FF14;
+            --text-secondary: #008F11;
+            --border-color: rgba(57, 255, 20, 0.2);
+            --user-bubble-bg: linear-gradient(135deg, #008F11, #39FF14);
+            --welcome-banner-bg: linear-gradient(135deg, #0D0D0D, #1a1a1a);
+            --header-bg: #0D0D0D;
+        }
+
+        html[data-theme="aurora"] {
+            --bg-dark-primary: #011327;
+            --bg-dark-secondary: #1b2845;
+            --accent-primary: #F72585;
+            --accent-secondary: #7209B7;
+            --text-primary: #ffffff;
+            --text-secondary: #bde0fe;
+            --border-color: rgba(189, 224, 254, 0.2);
+            --user-bubble-bg: linear-gradient(135deg, #F72585, #7209B7);
+            --welcome-banner-bg: linear-gradient(135deg, #1b2845, #343a62);
+            --header-bg: #1b2845;
+        }
+
+        html[data-theme="daylight"] {
+            --bg-dark-primary: #F3F4F6;
+            --bg-dark-secondary: #FFFFFF;
+            --accent-primary: #3B82F6;
+            --accent-secondary: #F97316;
+            --text-primary: #1F2937;
+            --text-secondary: #4B5567;
+            --border-color: #D1D5DB;
+            --user-bubble-bg: linear-gradient(135deg, #3B82F6, #2563EB);
+            --welcome-banner-bg: linear-gradient(135deg, #e5e7eb, #ffffff);
+            --header-bg: #FFFFFF;
+        }
+        
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+        
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: var(--bg-dark-primary);
+            color: var(--text-primary);
+            -webkit-tap-highlight-color: transparent;
+            overscroll-behavior: none;
+        }
+        
+        .font-orbitron { font-family: 'Orbitron', sans-serif; }
+
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-dark-primary);
+            display: flex; justify-content: center; align-items: center; z-index: 10000;
+            transition: opacity 1s ease-out, visibility 1s ease-out; opacity: 1; visibility: visible; overflow: hidden;
+        }
+        #splash-screen.hidden { opacity: 0; visibility: hidden; }
+        .splash-content { text-align: center; z-index: 10; animation: fadeIn 2s ease-in-out; }
+        .splash-logo { font-size: 5rem; color: var(--accent-primary); text-shadow: 0 0 15px var(--accent-primary), 0 0 25px var(--accent-primary); animation: pulse 2.5s infinite; }
+        .splash-title { font-size: 2.25rem; color: var(--text-primary); font-weight: 700; letter-spacing: 4px; margin-top: 1rem; text-transform: uppercase; }
+        .splash-subtitle { font-size: 1rem; color: var(--text-secondary); margin-top: 0.5rem; letter-spacing: 1px; }
+        #matrix-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
+        .app-container { display: none; height: 100vh; width: 100vw; flex-direction: column; background-color: var(--bg-dark-primary); }
+        .main-content { flex-grow: 1; min-height: 0; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+        .view-section { display: none; flex-grow: 1; flex-direction: column; overflow-y: auto; }
+        .view-section.active { display: flex; animation: fadeIn 0.5s ease; }
+        #chat-view { overflow: hidden; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark-secondary); }
+        ::-webkit-scrollbar-thumb { background: rgba(169, 168, 201, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(169, 168, 201, 0.4); }
+        
+        .action-card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            border-radius: 20px; padding: 24px; text-align: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.4s ease;
+            cursor: pointer; position: relative; overflow: hidden;
+        }
+        .action-card:hover:not(.disabled) { 
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            border-color: var(--accent-primary);
+        }
+        .action-card i { font-size: 2.25rem; margin-bottom: 16px; color: var(--accent-primary); text-shadow: 0 0 8px var(--accent-primary); }
+        .action-card p { font-size: 1.125rem; font-weight: 600; color: var(--text-primary); }
+        .action-card.disabled { filter: grayscale(80%); opacity: 0.4; cursor: not-allowed; }
+        .soon-badge {
+            position: absolute; top: -1px; left: -1px; background-color: var(--accent-secondary);
+            color: var(--bg-dark-primary); padding: 4px 10px; font-size: 11px; font-weight: bold;
+            border-bottom-right-radius: 16px; border-top-left-radius: 20px;
+        }
+        
+        #chat-area { flex-grow: 1; overflow-y: auto; min-height: 0; }
+        .chat-bubble { max-width: 85%; padding: 14px 20px; border-radius: 24px; line-height: 1.6; word-wrap: break-word; }
+        .bot-bubble { background: var(--bg-dark-secondary); color: var(--text-primary); border-bottom-right-radius: 8px; }
+        .user-bubble { background: var(--user-bubble-bg); color: white; border-bottom-left-radius: 8px; align-self: flex-start; }
+        .bot-typing { color: var(--text-secondary); font-size: 0.875rem; }
+        .bot-typing .dot { display: inline-block; width: 8px; height: 8px; background-color: var(--text-secondary); border-radius: 50%; margin: 0 2px; animation: typing-bounce 1.4s infinite; }
+        .bot-typing .dot:nth-child(2) { animation-delay: 0.2s; }
+        .bot-typing .dot:nth-child(3) { animation-delay: 0.4s; }
+        .chat-bubble pre { background-color: #0c0c0f; padding: 16px; border-radius: 12px; font-family: 'Courier New', monospace; white-space: pre-wrap; direction: ltr; text-align: left; position: relative; border: 1px solid var(--border-color); }
+        .copy-code-btn { position: absolute; top: 10px; left: 10px; background-color: #333; color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s, background-color 0.2s; }
+        .chat-bubble pre:hover .copy-code-btn { opacity: 1; }
+        .copy-code-btn:hover { background-color: #0077B6; }
+        
+        #chat-input-footer { background: var(--bg-dark-primary); border-top: 1px solid var(--border-color); flex-shrink: 0; }
+        #chat-input { background-color: var(--bg-dark-secondary); color: var(--text-primary); border: 1px solid var(--border-color); transition: border-color 0.3s, box-shadow 0.3s; }
+        #chat-input:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 0 2px var(--accent-primary); }
+        #send-btn { background-color: var(--accent-primary); color: #0A091E; transition: background-color 0.3s, transform 0.1s; }
+        #send-btn:hover { filter: brightness(1.2); }
+        #send-btn:disabled { background-color: #4b5563; cursor: not-allowed; }
+
+        .bottom-nav { background: rgba(10, 9, 30, 0.7); backdrop-filter: blur(12px); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; z-index: 100; flex-shrink: 0; transition: background-color 0.4s ease, border-color 0.4s ease; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-secondary); padding: 10px 0; flex-grow: 1; transition: color 0.3s; cursor: pointer; position: relative; }
+        .nav-item i { font-size: 1.5rem; margin-bottom: 2px; transition: transform 0.3s; }
+        .nav-item span { font-size: 0.75rem; }
+        .nav-item.active i { color: var(--accent-primary); transform: translateY(-3px); }
+        .nav-item.active span { color: var(--text-primary); }
+        .nav-item .active-indicator { position: absolute; bottom: 0; width: 0; height: 3px; background-color: var(--accent-primary); border-radius: 2px; transition: width 0.3s ease-in-out; }
+        .nav-item.active .active-indicator { width: 40px; }
+        
+        .app-header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+        }
+
+        .login-button {
+            background-color: rgba(255, 255, 255, 0.08);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .login-button:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--text-primary);
+        }
+        
+        .welcome-banner {
+            background: var(--welcome-banner-bg);
+            border-radius: 16px;
+            padding: 16px 20px;
+            margin: 32px 20px 20px 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .banner-icon {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        .banner-icon:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        #theme-dropdown {
+            position: absolute;
+            left: 20px; 
+            top: 135px;
+            background: var(--bg-dark-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 8px;
+            z-index: 110;
+            display: flex;
+            gap: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+        }
+        #theme-dropdown.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        .theme-dropdown-button {
+            width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+            border: 2px solid var(--border-color);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .theme-dropdown-button:hover { transform: scale(1.1); }
+        .theme-dropdown-button.active { border-color: var(--accent-primary); }
+
+        html[data-theme="daylight"] .app-header {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        html[data-theme="daylight"] .bottom-nav {
+            background: #FFFFFF;
+            backdrop-filter: none;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            border-top: 1px solid var(--border-color);
+        }
+        
+        html[data-theme="daylight"] .action-card {
+            background: var(--bg-dark-secondary);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        html[data-theme="daylight"] .bot-bubble {
+            background: #E5E7EB; /* gray-200 */
+            color: var(--text-primary);
+        }
+
+        /* ✨ أنماط للميزات الجديدة */
+        .news-card, .history-card {
+            background-color: var(--bg-dark-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .news-card:hover, .history-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .history-card { cursor: pointer; }
+        .comparison-input {
+            background-color: var(--bg-dark-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .app-button {
+            background-color: var(--accent-primary);
+            color: var(--bg-dark-primary);
+            transition: filter 0.2s, background-color 0.2s;
+        }
+        .app-button:hover {
+            filter: brightness(1.15);
+        }
+        .app-button.danger {
+             background-color: var(--accent-secondary);
+        }
+        .loading-spinner {
+            border-color: var(--accent-primary);
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+        
+        /* ✨ أنماط نافذة البحث */
+        #search-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2000;
+            background-color: rgba(10, 9, 30, 0.5);
+            backdrop-filter: blur(15px);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        #search-modal.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        #search-input {
+             color: var(--text-primary);
+             background-color: var(--bg-dark-secondary);
+        }
+        #search-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+        .search-result-item {
+            background-color: var(--bg-dark-secondary);
+            border: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+        .search-result-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+        @keyframes typing-bounce { 0%, 70%, 100% { transform: translateY(0); } 35% { transform: translateY(-6px); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen">
+        <canvas id="matrix-canvas"></canvas>
+        <div class="splash-content">
+            <div class="splash-logo"><i class="fas fa-brain"></i></div>
+            <h1 class="splash-title font-orbitron">EMPEROR TECH AI</h1>
+            <p class="splash-subtitle">بوابة الذكاء الاصطناعي التقنية</p>
+        </div>
+    </div>
+
+    <div class="app-container" id="app-container">
+        
+        <header class="app-header p-4 flex items-center justify-between flex-shrink-0 relative">
+            <div class="flex items-center">
+                 <button id="login-header-btn" class="login-button">
+                    <i class="fas fa-user-circle ml-2"></i>
+                    <span>تسجيل الدخول</span>
+                </button>
+            </div>
+            <div class="flex items-center gap-2">
+                <h2 class="font-orbitron text-md">EMPEROR</h2>
+                <i class="fas fa-atom text-accent-primary"></i>
+            </div>
+        </header>
+        
+        <div id="theme-dropdown">
+            <button class="theme-dropdown-button active" data-theme="emperor" style="background: #0A091E;"></button>
+            <button class="theme-dropdown-button" data-theme="neon" style="background: #0d1117;"></button>
+            <button class="theme-dropdown-button" data-theme="matrix" style="background: #000;"></button>
+            <button class="theme-dropdown-button" data-theme="aurora" style="background: #011327;"></button>
+            <button class="theme-dropdown-button" data-theme="daylight" style="background: #F3F4F6;"></button>
+        </div>
+
+        <div class="main-content">
+            <div id="home-view" class="view-section">
+                <div id="welcome-banner-container" class="flex-shrink-0"></div>
+                <div class="p-5 sm:p-8">
+                    <div class="grid grid-cols-2 gap-5 md:gap-6">
+                        <!-- ✨ البطاقة الرئيسية المحدثة -->
+                        <div class="action-card col-span-2 flex justify-between items-center p-6 text-right" data-action="start-chat">
+                            <div>
+                                <i class="fas fa-comments text-4xl mb-2 block"></i>
+                                <p class="text-xl font-bold">بدء محادثة جديدة</p>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <div class="text-right">
+                                    <p class="font-bold text-text-primary text-lg">Billel Bouraba</p>
+                                </div>
+                                <img src="images/logobillel.png" alt="Billel Bouraba" class="w-16 h-16 rounded-full border-2 border-accent-primary object-cover">
+                            </div>
+                        </div>
+
+                        <div class="action-card" data-action="tech-news">
+                            <i class="fas fa-newspaper"></i><p>آخر الأخبار التقنية</p>
+                        </div>
+                        <div class="action-card" data-action="explain-term">
+                            <i class="fas fa-book-open"></i><p>شرح مصطلح تقني</p>
+                        </div>
+                        <div class="action-card" data-action="chat-history">
+                            <i class="fas fa-history"></i><p>أرشيف المحادثات</p>
+                        </div>
+                        <div class="action-card" data-action="tech-comparison">
+                            <i class="fas fa-balance-scale-right"></i><p>مقارنة التقنيات</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="chat-view" class="view-section">
+                <main id="chat-area" class="p-4 sm:p-6"><div id="chat-messages" class="flex flex-col gap-5"></div></main>
+                <footer id="chat-input-footer" class="p-4">
+                    <div class="flex items-center max-w-4xl mx-auto">
+                        <input type="text" id="chat-input" class="w-full py-3 px-5 rounded-full" placeholder="اكتب سؤالك التقني هنا...">
+                        <button id="send-btn" class="mr-3 p-3 rounded-full"><i class="fas fa-paper-plane text-xl"></i></button>
+                    </div>
+                </footer>
+            </div>
+
+            <div id="tech-news-view" class="view-section p-5 sm:p-8">
+                <div class="w-full max-w-4xl mx-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-text-primary">آخر الأخبار التقنية</h2>
+                        <button id="refresh-news-btn" class="banner-icon"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                    <p id="news-last-updated" class="text-sm text-text-secondary mb-6"></p>
+                    <div id="tech-news-content" class="space-y-5"></div>
+                </div>
+            </div>
+
+            <div id="tech-comparison-view" class="view-section p-5 sm:p-8">
+                <div class="w-full max-w-4xl mx-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-text-primary">مقارنة التقنيات</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-end bg-bg-dark-secondary p-5 rounded-2xl border border-border-color">
+                        <div class="w-full">
+                            <label for="tech1" class="text-sm font-medium text-text-secondary mb-2 block">التقنية الأولى</label>
+                            <input type="text" id="tech1" class="comparison-input w-full p-3 rounded-lg" placeholder="مثال: React">
+                        </div>
+                        <div class="w-full">
+                            <label for="tech2" class="text-sm font-medium text-text-secondary mb-2 block">التقنية الثانية</label>
+                            <input type="text" id="tech2" class="comparison-input w-full p-3 rounded-lg" placeholder="مثال: Vue">
+                        </div>
+                        <div class="md:col-span-2">
+                             <button id="compare-btn" class="app-button w-full p-3 rounded-lg font-bold text-lg flex items-center justify-center">
+                                <i class="fas fa-balance-scale-right ml-2"></i> قارن الآن
+                            </button>
+                        </div>
+                    </div>
+                    <div id="comparison-result-area" class="mt-6 bg-bg-dark-secondary p-5 rounded-2xl border border-border-color min-h-[200px] whitespace-pre-wrap leading-relaxed"></div>
+                </div>
+            </div>
+
+            <div id="explain-term-view" class="view-section p-5 sm:p-8">
+                <div class="w-full max-w-4xl mx-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-text-primary">شرح مصطلح تقني</h2>
+                    </div>
+                    <div class="grid grid-cols-1 gap-4 items-end bg-bg-dark-secondary p-5 rounded-2xl border border-border-color">
+                        <div class="w-full">
+                            <label for="term-input" class="text-sm font-medium text-text-secondary mb-2 block">أدخل المصطلح التقني</label>
+                            <input type="text" id="term-input" class="comparison-input w-full p-3 rounded-lg" placeholder="مثال: API">
+                        </div>
+                        <div>
+                             <button id="explain-term-btn" class="app-button w-full p-3 rounded-lg font-bold text-lg flex items-center justify-center">
+                                <i class="fas fa-book-open ml-2"></i> اشرح الآن
+                            </button>
+                        </div>
+                    </div>
+                    <div id="term-explanation-result" class="mt-6 bg-bg-dark-secondary p-5 rounded-2xl border border-border-color min-h-[200px] whitespace-pre-wrap leading-relaxed"></div>
+                </div>
+            </div>
+
+             <div id="history-view" class="view-section p-5 sm:p-8">
+                <div class="w-full max-w-4xl mx-auto">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-text-primary">أرشيف المحادثات</h2>
+                        <button id="clear-history-btn" class="app-button danger px-4 py-2 rounded-lg text-sm">
+                            <i class="fas fa-trash-alt ml-2"></i> تفريغ السجل
+                        </button>
+                    </div>
+                    <div id="history-content" class="space-y-4"></div>
+                </div>
+            </div>
+
+            <div id="settings-view" class="view-section p-5 sm:p-8">
+                 <div class="text-center">
+                     <h2 class="text-xl font-bold text-text-primary">الإعدادات</h2>
+                     <p class="text-text-secondary mt-2">يمكنك الآن تغيير الثيم من الأيقونة في الشاشة الرئيسية.</p>
+                 </div>
+            </div>
+            
+            <div id="about-view" class="view-section p-5 sm:p-8 text-center items-center">
+                 <div class="max-w-2xl w-full">
+                    <div class="splash-logo text-4xl mb-4 text-accent-primary" style="animation: none; text-shadow: 0 0 10px var(--accent-primary);">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h2 class="font-orbitron text-2xl font-bold">EMPEROR TECH AI</h2>
+                    <p class="text-text-secondary text-sm mb-8">النسخة 1.0 | المساعد: بلال 2.0</p>
+                    
+                    <div class="bg-bg-dark-secondary p-6 rounded-2xl border border-border-color text-right mb-6">
+                        <h3 class="text-xl font-bold mb-3 text-accent-primary">عن المطور: بلال بورابعة</h3>
+                        <p class="text-text-primary leading-relaxed">
+                            مبرمج وخبير تقني جزائري، يتميّز بشغفه العميق بمجالات البرمجة والذكاء الاصطناعي والتكنولوجيا الحديثة. بدأ مسيرته في عام 2014، واكتسب منذ ذلك الحين خبرة واسعة في تطوير البرمجيات، بناء الأنظمة، وتصميم الحلول التقنية المبتكرة.
+                            <br><br>
+                            ينشط بلال في مشاركة المعرفة من خلال مدونته التقنية ومشاريعه التعليمية، ويعمل حاليًا على تأليف كتاب متخصص حول نظام أندرويد، يهدف من خلاله إلى تبسيط المفاهيم التقنية وتقديم محتوى احترافي موجه للمطورين والمستخدمين على حدّ سواء.
+                        </p>
+                    </div>
+                     <p class="text-text-secondary text-xs">&copy; 2024 EMPEROR TECH AI. جميع الحقوق محفوظة.</p>
+                 </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" data-view="home-view"><i class="fas fa-th-large"></i><span>الرئيسية</span><div class="active-indicator"></div></div>
+            <div class="nav-item" data-view="chat-view"><i class="fas fa-robot"></i><span>المساعد</span><div class="active-indicator"></div></div>
+            <div class="nav-item" data-view="about-view"><i class="fas fa-info-circle"></i><span>حول</span><div class="active-indicator"></div></div>
+            <div class="nav-item" data-view="settings-view"><i class="fas fa-cog"></i><span>الإعدادات</span><div class="active-indicator"></div></div>
+        </nav>
+    </div>
+
+    <!-- ✨ نافذة البحث الجديدة -->
+    <div id="search-modal">
+        <div class="p-4 flex-shrink-0 flex items-center gap-4">
+             <input type="text" id="search-input" class="w-full py-3 px-5 rounded-full border border-border-color focus:outline-none focus:ring-2 focus:ring-accent-primary" placeholder="ابحث في المحادثات والميزات...">
+             <button id="close-search-btn" class="text-text-secondary text-2xl"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="search-results-area" class="flex-grow p-4 overflow-y-auto">
+            <!-- سيتم عرض نتائج البحث هنا -->
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const docElement = document.documentElement;
+            const splashScreen = document.getElementById('splash-screen');
+            const appContainer = document.getElementById('app-container');
+            const chatMessagesContainer = document.getElementById('chat-messages');
+            const chatInput = document.getElementById('chat-input');
+            const sendBtn = document.getElementById('send-btn');
+            const navItems = document.querySelectorAll('.nav-item');
+            const welcomeBannerContainer = document.getElementById('welcome-banner-container');
+            const themeDropdown = document.getElementById('theme-dropdown');
+            const themeButtons = themeDropdown.querySelectorAll('.theme-dropdown-button');
+
+            const searchModal = document.getElementById('search-modal');
+            const searchInput = document.getElementById('search-input');
+            const searchResultsArea = document.getElementById('search-results-area');
+            const closeSearchBtn = document.getElementById('close-search-btn');
+
+            const API_KEY = "AIzaSyBgh_-6qp8uVV3dPB1U8IScnExZihA-nPU";
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+            let chatHistory = [];
+            let currentChatId = null;
+
+            function applyTheme(themeName) {
+                docElement.setAttribute('data-theme', themeName);
+                localStorage.setItem('emperor-theme', themeName);
+                themeButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.theme === themeName);
+                });
+            }
+            
+            themeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    applyTheme(button.dataset.theme);
+                    themeDropdown.classList.remove('visible');
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (themeDropdown.classList.contains('visible') && !e.target.closest('#theme-toggle-btn-banner')) {
+                    themeDropdown.classList.remove('visible');
+                }
+            });
+
+            const savedTheme = localStorage.getItem('emperor-theme') || 'emperor';
+            applyTheme(savedTheme);
+
+            function showWelcomeBanner() {
+                const today = new Date();
+                const dateOptions = { year: 'numeric', month: 'long', day: 'numeric', numberingSystem: 'latn' };
+                const formattedDate = today.toLocaleDateString('ar-EG', dateOptions);
+
+                welcomeBannerContainer.innerHTML = `
+                    <div class="welcome-banner flex items-center justify-between">
+                        <div class="text-right">
+                             <h2 class="text-xl font-bold text-text-primary">مرحباً بك مجدداً!</h2>
+                             <p class="text-sm text-text-secondary mt-1">تاريخ اليوم: ${formattedDate}</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button id="open-search-btn" class="banner-icon"><i class="fas fa-search"></i></button>
+                            <button id="theme-toggle-btn-banner" class="banner-icon"><i class="fas fa-palette"></i></button>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('theme-toggle-btn-banner').addEventListener('click', (e) => {
+                     e.stopPropagation();
+                     themeDropdown.classList.toggle('visible');
+                });
+                 document.getElementById('open-search-btn').addEventListener('click', openSearchModal);
+            }
+
+            const canvas = document.getElementById('matrix-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            const letters = 'EMPERORTECHAI01';
+            const fontSize = 16;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+
+            function drawMatrix() {
+                ctx.fillStyle = 'rgba(10, 9, 30, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = getComputedStyle(docElement).getPropertyValue('--accent-primary').trim();
+                ctx.font = fontSize + 'px monospace';
+                for (let i = 0; i < drops.length; i++) {
+                    const text = letters[Math.floor(Math.random() * letters.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                    drops[i]++;
+                }
+            }
+            const matrixInterval = setInterval(drawMatrix, 40);
+            
+            setTimeout(() => {
+                splashScreen.classList.add('hidden');
+                clearInterval(matrixInterval);
+                appContainer.style.display = 'flex';
+                navigateToView('home-view');
+            }, 3500);
+            
+            window.navigateToView = function(viewId) {
+                document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+                const targetView = document.getElementById(viewId);
+                if(targetView) targetView.classList.add('active');
+                
+                let navTarget = viewId;
+                const mainFeatures = ['tech-news-view', 'tech-comparison-view', 'explain-term-view', 'history-view'];
+                if (mainFeatures.includes(viewId)) {
+                    navTarget = 'home-view';
+                }
+
+                const activeNavItem = document.querySelector(`.nav-item[data-view="${navTarget}"]`);
+                document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+                if(activeNavItem) activeNavItem.classList.add('active');
+
+                if (viewId === 'home-view') showWelcomeBanner();
+                if (viewId === 'chat-view' && chatMessagesContainer.children.length === 0) showWelcomeMessage();
+                if (viewId === 'tech-news-view') fetchTechNews();
+                if (viewId === 'history-view') displayChatHistory();
+                if (viewId === 'tech-comparison-view') {
+                    document.getElementById('comparison-result-area').innerHTML = '<p class="text-text-secondary text-center">أدخل أسماء تقنيتين للمقارنة بينهما.</p>';
+                }
+                if (viewId === 'explain-term-view') {
+                    document.getElementById('term-explanation-result').innerHTML = '<p class="text-text-secondary text-center">أدخل مصطلحًا تقنيًا للحصول على شرح له.</p>';
+                }
+            }
+
+            navItems.forEach(item => item.addEventListener('click', () => navigateToView(item.dataset.view)));
+            document.querySelectorAll('.action-card').forEach(card => {
+                if (!card.classList.contains('disabled')) {
+                    card.addEventListener('click', () => {
+                        const action = card.dataset.action;
+                        if (action === 'start-chat') startNewChat();
+                        else if (action === 'tech-news') navigateToView('tech-news-view');
+                        else if (action === 'tech-comparison') navigateToView('tech-comparison-view');
+                        else if (action === 'explain-term') navigateToView('explain-term-view');
+                        else if (action === 'chat-history') navigateToView('history-view');
+                    });
+                }
+            });
+            
+            function addMessage(text, sender, isCode = false) {
+                const messageWrapper = document.createElement('div');
+                
+                if (sender === 'bot') {
+                    messageWrapper.className = 'flex items-end gap-3 justify-end';
+                    
+                    const bubble = document.createElement('div');
+                    bubble.classList.add('chat-bubble', 'bot-bubble');
+
+                    if (isCode) {
+                        const pre = document.createElement('pre');
+                        const codeBlock = text.match(/```(\w*)\n([\s\S]*?)```/);
+                        const codeContent = codeBlock ? codeBlock[2].trim() : text.trim();
+                        pre.innerHTML = `<code>${codeContent.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`;
+                        const copyBtn = document.createElement('button');
+                        copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                        copyBtn.title = 'نسخ الكود';
+                        copyBtn.className = 'copy-code-btn';
+                        copyBtn.onclick = () => {
+                            navigator.clipboard.writeText(codeContent).then(() => {
+                               copyBtn.innerHTML = '<i class="fas fa-check"></i>';
+                               setTimeout(() => { copyBtn.innerHTML = '<i class="fas fa-copy"></i>'; }, 2000);
+                            });
+                        };
+                        pre.appendChild(copyBtn);
+                        bubble.appendChild(pre);
+                    } else {
+                        bubble.innerHTML = text.replace(/\n/g, '<br>');
+                    }
+
+                    const avatar = document.createElement('img');
+                    avatar.src = 'images/logobillel.png';
+                    avatar.alt = 'Billel Bouraba';
+                    avatar.className = 'w-10 h-10 rounded-full border-2 border-accent-primary object-cover flex-shrink-0';
+
+                    messageWrapper.appendChild(bubble);
+                    messageWrapper.appendChild(avatar);
+
+                } else { // sender === 'user'
+                    messageWrapper.className = 'chat-bubble user-bubble';
+                    messageWrapper.innerHTML = text.replace(/\n/g, '<br>');
+                }
+
+                chatMessagesContainer.appendChild(messageWrapper);
+                messageWrapper.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+
+            function showTypingIndicator() {
+                const typingLine = document.createElement('div');
+                typingLine.id = 'typing-indicator';
+                typingLine.className = 'flex items-end gap-3 justify-end';
+
+                const typingBubble = document.createElement('div');
+                typingBubble.className = 'chat-bubble bot-bubble bot-typing';
+                typingBubble.innerHTML = `<span class="mr-2">بلال 2.0 يكتب الآن</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+                
+                const avatar = document.createElement('img');
+                avatar.src = 'images/logobillel.png';
+                avatar.alt = 'Billel Bouraba';
+                avatar.className = 'w-10 h-10 rounded-full border-2 border-accent-primary object-cover flex-shrink-0';
+
+                typingLine.appendChild(typingBubble);
+                typingLine.appendChild(avatar);
+                
+                chatMessagesContainer.appendChild(typingLine);
+                typingLine.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+            function removeTypingIndicator() {
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+            }
+
+            function showWelcomeMessage() {
+                 if (chatHistory.length === 0) {
+                    const welcomeText = `أنا بلال 2.0 من EMPEROR TECH AI، وأنا هنا لأجيب على استفساراتك التقنية بناءً على خبرة بلال بورابعة.\n\nكيف يمكنني مساعدتك اليوم؟`;
+                    addMessage(welcomeText, 'bot');
+                 }
+            }
+
+            function saveCurrentChat() {
+                if (chatHistory.length === 0) return;
+
+                let history = JSON.parse(localStorage.getItem('emperor-chat-history')) || [];
+                const chatData = {
+                    id: currentChatId || Date.now(),
+                    timestamp: new Date().toISOString(),
+                    messages: chatHistory
+                };
+
+                const existingIndex = history.findIndex(chat => chat.id === chatData.id);
+                if (existingIndex > -1) {
+                    history[existingIndex] = chatData;
+                } else {
+                    history.push(chatData);
+                }
+                
+                localStorage.setItem('emperor-chat-history', JSON.stringify(history));
+            }
+
+            function startNewChat() {
+                saveCurrentChat();
+                chatHistory = [];
+                currentChatId = Date.now();
+                chatMessagesContainer.innerHTML = '';
+                showWelcomeMessage();
+                navigateToView('chat-view');
+            }
+            
+            function displayChatHistory() {
+                const historyContent = document.getElementById('history-content');
+                const history = JSON.parse(localStorage.getItem('emperor-chat-history')) || [];
+                history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                if (history.length === 0) {
+                    historyContent.innerHTML = '<p class="text-text-secondary text-center">لا توجد محادثات محفوظة في الأرشيف.</p>';
+                    return;
+                }
+
+                historyContent.innerHTML = '';
+                history.forEach(chat => {
+                    const userMessage = chat.messages.find(msg => msg.role === 'user');
+                    const title = userMessage ? userMessage.parts[0].text.substring(0, 50) + '...' : 'محادثة فارغة';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'history-card';
+                    card.dataset.chatId = chat.id;
+                    card.innerHTML = `
+                        <p class="font-bold text-text-primary">${title}</p>
+                        <p class="text-sm text-text-secondary mt-2">${new Date(chat.timestamp).toLocaleString('ar-EG')}</p>
+                    `;
+                    card.addEventListener('click', () => loadChatFromHistory(chat.id));
+                    historyContent.appendChild(card);
+                });
+            }
+
+            function loadChatFromHistory(chatId) {
+                saveCurrentChat();
+                const history = JSON.parse(localStorage.getItem('emperor-chat-history')) || [];
+                const chatToLoad = history.find(chat => chat.id === chatId);
+                
+                if (chatToLoad) {
+                    currentChatId = chatToLoad.id;
+                    chatHistory = chatToLoad.messages;
+                    
+                    chatMessagesContainer.innerHTML = '';
+                    chatHistory.forEach(msg => {
+                        const sender = msg.role === 'model' ? 'bot' : 'user';
+                        addMessage(msg.parts[0].text, sender, msg.parts[0].text.startsWith('```'));
+                    });
+                    navigateToView('chat-view');
+                }
+            }
+
+            function clearChatHistory() {
+                 if (confirm("هل أنت متأكد من رغبتك في حذف جميع المحادثات نهائياً؟")) {
+                    localStorage.removeItem('emperor-chat-history');
+                    displayChatHistory();
+                }
+            }
+            
+            document.getElementById('clear-history-btn').addEventListener('click', clearChatHistory);
+
+
+            async function callGeminiAPI(prompt, systemPrompt = null, useHistory = false) {
+                let contents = [];
+                if(useHistory) {
+                    contents = [...chatHistory];
+                }
+
+                if (systemPrompt && contents.length === 0) {
+                    contents.unshift({ role: "user", parts: [{text: systemPrompt}] });
+                }
+
+                contents.push({ role: "user", parts: [{ text: prompt }] });
+                
+                const payload = { contents };
+                
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                    const result = await response.json();
+                    if (result.candidates && result.candidates[0]?.content.parts[0].text) {
+                        const botResponse = result.candidates[0].content.parts[0].text;
+                        if(useHistory) {
+                           chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                           chatHistory.push({ role: "model", parts: [{ text: botResponse }] });
+                           saveCurrentChat();
+                        }
+                        return botResponse;
+                    } else {
+                        if(useHistory) chatHistory.pop();
+                        return "عذراً، لم أتمكن من الحصول على إجابة. الرجاء المحاولة مرة أخرى.";
+                    }
+                } catch (error) {
+                    console.error("Gemini API call failed:", error);
+                    if(useHistory) chatHistory.pop();
+                    return "عذراً، حدث خطأ أثناء الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.";
+                }
+            }
+            
+            async function handleChatMessage(prompt) {
+                showTypingIndicator();
+                sendBtn.disabled = true;
+                const systemPrompt = `أنت "بلال 2.0"، المساعد الرقمي الفائق والممثل الرسمي لتطبيق "EMPEROR TECH AI". أنت التجسيد الرقمي لخبرة وشخصية مبتكرك، المبرمج والخبير التقني الجزائري "بلال بورابعة". مبتكرك، بلال بورابعة، بدأ رحلته التقنية في عام 2014 ويتميز بشغفه العميق بالبرمجة، الذكاء الاصطناعي، والتكنولوجيا الحديثة، ويعمل حالياً على تأليف كتاب متخصص حول نظام أندرويد. بناءً على ذلك، يجب أن تعكس إجاباتك مبادئه الأساسية: الجودة العالية، تبسيط المفاهيم، والرؤية الإبداعية. مهمتك هي الإجابة على جميع الأسئلة في عالم التكنولوجيا.`;
+                const botResponse = await callGeminiAPI(prompt, systemPrompt, true);
+                removeTypingIndicator();
+                const parts = botResponse.split(/(```[\s\S]*?```)/g);
+                parts.forEach(part => {
+                    if (part.trim()) addMessage(part, 'bot', part.startsWith('```'));
+                });
+                sendBtn.disabled = false;
+            }
+
+            function sendMessage() {
+                const messageText = chatInput.value.trim();
+                if (messageText === '') return;
+                addMessage(messageText, 'user');
+                chatInput.value = '';
+                handleChatMessage(messageText);
+            }
+
+            async function fetchTechNews(forceRefresh = false) {
+                const contentArea = document.getElementById('tech-news-content');
+                const lastUpdatedEl = document.getElementById('news-last-updated');
+                const today = new Date().toISOString().split('T')[0];
+                const cachedNews = JSON.parse(localStorage.getItem('tech-news'));
+
+                if (cachedNews && cachedNews.date === today && !forceRefresh) {
+                    displayNews(cachedNews.articles);
+                    lastUpdatedEl.textContent = `آخر تحديث: اليوم (من الذاكرة المؤقتة)`;
+                    return;
+                }
+                
+                contentArea.innerHTML = `<div class="flex justify-center items-center p-10"><div class="loading-spinner w-8 h-8 border-4 rounded-full"></div></div>`;
+                lastUpdatedEl.textContent = `جاري البحث عن آخر الأخبار...`;
+
+                const prompt = `أعطني ملخصًا لأهم 4 أخبار تقنية عالمية لهذا اليوم. لكل خبر، قدم عنوانًا جذابًا، ملخصًا من فقرة واحدة، اسم المصدر، ورابط URL مباشر للمصدر. قدم الإجابة بتنسيق JSON حصريًا، على هذا الشكل: \`[{"title": "...", "summary": "...", "sourceName": "...", "sourceURL": "..."}, ...]\``;
+                
+                try {
+                    const responseText = await callGeminiAPI(prompt);
+                    const cleanedText = responseText.replace(/```json\n?/, '').replace(/```$/, '');
+                    const articles = JSON.parse(cleanedText);
+                    
+                    localStorage.setItem('tech-news', JSON.stringify({ date: today, articles }));
+                    displayNews(articles);
+                    lastUpdatedEl.textContent = `آخر تحديث: ${new Date().toLocaleTimeString('ar-EG')}`;
+                } catch (error) {
+                    console.error("Failed to fetch tech news:", error);
+                    contentArea.innerHTML = `<p class="text-center text-red-500">فشل في جلب الأخبار. الرجاء المحاولة مرة أخرى لاحقًا.</p>`;
+                }
+            }
+
+            function displayNews(articles) {
+                const contentArea = document.getElementById('tech-news-content');
+                contentArea.innerHTML = '';
+                articles.forEach(article => {
+                    const card = document.createElement('div');
+                    card.className = 'news-card';
+                    card.innerHTML = `
+                        <h3 class="text-xl font-bold text-accent-primary mb-3">${article.title}</h3>
+                        <p class="text-text-primary leading-relaxed mb-4">${article.summary}</p>
+                        <a href="${article.sourceURL}" target="_blank" rel="noopener noreferrer" class="text-sm text-accent-primary hover:underline">
+                            المصدر: ${article.sourceName} <i class="fas fa-external-link-alt text-xs ml-1"></i>
+                        </a>
+                    `;
+                    contentArea.appendChild(card);
+                });
+            }
+            
+            document.getElementById('refresh-news-btn').addEventListener('click', () => fetchTechNews(true));
+
+            async function handleTechComparison() {
+                const tech1 = document.getElementById('tech1').value.trim();
+                const tech2 = document.getElementById('tech2').value.trim();
+                const resultArea = document.getElementById('comparison-result-area');
+                const compareBtn = document.getElementById('compare-btn');
+
+                if (!tech1 || !tech2) {
+                    resultArea.innerHTML = '<p class="text-red-500 text-center">الرجاء إدخال أسماء التقنيتين للمقارنة.</p>';
+                    return;
+                }
+
+                compareBtn.disabled = true;
+                compareBtn.innerHTML = `<div class="loading-spinner w-6 h-6 border-2 rounded-full inline-block"></div><span class="mr-3">جاري المقارنة...</span>`;
+                resultArea.innerHTML = '';
+                
+                const prompt = `أجرِ مقارنة مفصلة بين ${tech1} و ${tech2}. غطِّ النقاط التالية: الأداء، منحنى التعلم، النظام البيئي (ecosystem)، وحالات الاستخدام المثلى لكل منهما. قدم الإجابة كنص منسق.`;
+                const comparisonText = await callGeminiAPI(prompt);
+                resultArea.innerHTML = comparisonText.replace(/\n/g, '<br>');
+                
+                compareBtn.disabled = false;
+                compareBtn.innerHTML = `<i class="fas fa-balance-scale-right ml-2"></i> قارن الآن`;
+            }
+            
+            async function handleTermExplanation() {
+                const term = document.getElementById('term-input').value.trim();
+                const resultArea = document.getElementById('term-explanation-result');
+                const explainBtn = document.getElementById('explain-term-btn');
+
+                if (!term) {
+                    resultArea.innerHTML = '<p class="text-red-500 text-center">الرجاء إدخال مصطلح للحصول على شرح له.</p>';
+                    return;
+                }
+
+                explainBtn.disabled = true;
+                explainBtn.innerHTML = `<div class="loading-spinner w-6 h-6 border-2 rounded-full inline-block"></div><span class="mr-3">جاري الشرح...</span>`;
+                resultArea.innerHTML = '';
+
+                const prompt = `اشرح المصطلح التقني التالي "${term}" بطريقة مبسطة وواضحة للمبتدئين، مع ذكر مثال عملي إن أمكن.`;
+                const explanationText = await callGeminiAPI(prompt);
+                resultArea.innerHTML = explanationText.replace(/\n/g, '<br>');
+                
+                explainBtn.disabled = false;
+                explainBtn.innerHTML = `<i class="fas fa-book-open ml-2"></i> اشرح الآن`;
+            }
+
+            function openSearchModal() {
+                searchModal.classList.add('visible');
+                searchInput.focus();
+            }
+            function closeSearchModal() {
+                searchModal.classList.remove('visible');
+                searchInput.value = '';
+                searchResultsArea.innerHTML = '';
+            }
+
+            function handleSearch() {
+                const term = searchInput.value.toLowerCase().trim();
+                if (!term) {
+                    searchResultsArea.innerHTML = '';
+                    return;
+                }
+
+                const results = [];
+                const features = [
+                    { title: 'آخر الأخبار التقنية', icon: 'fa-newspaper', type: 'view', target: 'tech-news-view'},
+                    { title: 'شرح مصطلح تقني', icon: 'fa-book-open', type: 'view', target: 'explain-term-view'},
+                    { title: 'أرشيف المحادثات', icon: 'fa-history', type: 'view', target: 'history-view'},
+                    { title: 'مقارنة التقنيات', icon: 'fa-balance-scale-right', type: 'view', target: 'tech-comparison-view'},
+                ];
+                features.forEach(feature => {
+                    if(feature.title.toLowerCase().includes(term)) {
+                        results.push(feature);
+                    }
+                });
+
+                const history = JSON.parse(localStorage.getItem('emperor-chat-history')) || [];
+                history.forEach(chat => {
+                    const match = chat.messages.some(msg => msg.parts[0].text.toLowerCase().includes(term));
+                    if(match) {
+                        results.push({
+                            title: chat.messages.find(m => m.role === 'user')?.parts[0].text.substring(0, 50) + '...',
+                            icon: 'fa-comments',
+                            type: 'chat',
+                            id: chat.id
+                        });
+                    }
+                });
+
+                displaySearchResults(results);
+            }
+
+            function displaySearchResults(results) {
+                searchResultsArea.innerHTML = '';
+                if(results.length === 0) {
+                    searchResultsArea.innerHTML = '<p class="text-text-secondary text-center">لا توجد نتائج مطابقة.</p>';
+                    return;
+                }
+                results.forEach(result => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item p-4 rounded-lg flex items-center gap-4 cursor-pointer';
+                    item.innerHTML = `
+                        <i class="fas ${result.icon} text-accent-primary text-xl"></i>
+                        <span class="text-text-primary">${result.title}</span>
+                    `;
+                    item.addEventListener('click', () => {
+                        if(result.type === 'view') {
+                            navigateToView(result.target);
+                        } else if(result.type === 'chat') {
+                            loadChatFromHistory(result.id);
+                        }
+                        closeSearchModal();
+                    });
+                    searchResultsArea.appendChild(item);
+                });
+            }
+            
+            closeSearchBtn.addEventListener('click', closeSearchModal);
+            searchInput.addEventListener('input', handleSearch);
+
+            document.getElementById('compare-btn').addEventListener('click', handleTechComparison);
+            document.getElementById('explain-term-btn').addEventListener('click', handleTermExplanation);
+            sendBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+        });
+    </script>
+</body>
+</html>
